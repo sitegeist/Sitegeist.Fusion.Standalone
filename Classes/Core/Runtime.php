@@ -75,6 +75,13 @@ class Runtime
     protected $renderingStack = [];
 
     /**
+     * Configuration for default context
+     *
+     * @var array
+     */
+    protected $defaultContextConfiguration;
+
+    /**
      * Default context with helper definitions
      *
      * @var array
@@ -130,16 +137,20 @@ class Runtime
      * Constructor for the Fusion Runtime
      *
      * @param array $fusionConfiguration
+     * @param string $eelCacheDirectory
+     * @param array $defaultContextConfiguration
+     *
      */
-    public function __construct(array $fusionConfiguration)
+    public function __construct(array $fusionConfiguration, $eelCacheDirectory, $defaultContextConfiguration = [])
     {
         $this->pushContextArray([]);
         $this->fusionConfiguration = $fusionConfiguration;
+        $this->defaultContextConfiguration = $defaultContextConfiguration;
 
         // configure cache
         $environmentConfiguration = new EnvironmentConfiguration(
             'standaloneFusion',
-            __DIR__ . '/tmp'
+            $eelCacheDirectory
         );
         $cacheFactory = new CacheFactory($environmentConfiguration);
         $eelCache = $cacheFactory->create('eelEvaluatorCache', PhpFrontend::class, FileBackend::class);
@@ -806,7 +817,10 @@ class Runtime
      */
     protected function getDefaultContextVariables()
     {
-        return [];
+        if ($this->defaultContextVariables === null) {
+            $this->defaultContextVariables = EelUtility::getDefaultContextVariables($this->defaultContextConfiguration);
+        }
+        return $this->defaultContextVariables;
     }
 
     /**
