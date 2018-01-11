@@ -4,7 +4,7 @@
     "type": "library",
     "license": "GPL-3.0+",
     "require": {
-        "sitegeist/eel-standalone": "~4.3",
+        "sitegeist/eel-standalone": "*",
         "neos/utility-arrays": "~4.3",
         "neos/utility-files": "~4.3",
         "neos/utility-objecthandling": "~4.3",
