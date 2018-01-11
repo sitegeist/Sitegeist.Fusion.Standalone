@@ -1,0 +1,22 @@
+{
+    "name": "sitegeist/fusion-standalone",
+    "description": "Standalone version of neos/fusion without dependency to the neos/flow framework",
+    "type": "library",
+    "license": "GPL-3.0+",
+    "require": {
+        "sitegeist/eel-standalone": "*",
+        "neos/utility-arrays": "*",
+        "neos/utility-files": "*",
+        "neos/utility-objecthandling": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Sitegeist\\Fusion\\Standalone\\": "Classes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Sitegeist\\Fusion\\Standalone\\Tests\\": "Tests/"
+        }
+    }
+}
