@@ -15,11 +15,6 @@ use Neos\Utility\Arrays;
 use Neos\Utility\ObjectAccess;
 use Neos\Utility\PositionalArraySorter;
 
-use Neos\Cache\EnvironmentConfiguration;
-use Neos\Cache\CacheFactory;
-use Neos\Cache\Backend\FileBackend;
-use Neos\Cache\Frontend\PhpFrontend;
-
 use Sitegeist\Fusion\Standalone\FusionObjects\AbstractArrayFusionObject;
 use Sitegeist\Fusion\Standalone\FusionObjects\AbstractFusionObject;
 use Sitegeist\Fusion\Standalone\Core\ExceptionHandlers\AbstractRenderingExceptionHandler;
@@ -28,7 +23,7 @@ use Sitegeist\Fusion\Standalone\Exception as Exceptions;
 use Sitegeist\Fusion\Standalone\Exception;
 use Sitegeist\Fusion\Standalone\FusionException;
 
-use Sitegeist\Eel\Standalone\CompilingEvaluator;
+use Sitegeist\Eel\Standalone\EelEvaluatorInterface;
 use Sitegeist\Eel\Standalone\Utility as EelUtility;
 
 /**
@@ -137,25 +132,17 @@ class Runtime
      * Constructor for the Fusion Runtime
      *
      * @param array $fusionConfiguration
-     * @param string $eelCacheDirectory
-     * @param array $defaultContextConfiguration
+     * @param EelEvaluatorInterface $eelCacheDirectory
+     * @param array defaultContextVariables
      *
      */
-    public function __construct(array $fusionConfiguration, $eelCacheDirectory, $defaultContextConfiguration = [])
+    public function __construct(array $fusionConfiguration, EelEvaluatorInterface $eelEvaluator, array $defaultContextVariables = [])
     {
         $this->pushContextArray([]);
+
         $this->fusionConfiguration = $fusionConfiguration;
-        $this->defaultContextConfiguration = $defaultContextConfiguration;
-
-        // configure cache
-        $environmentConfiguration = new EnvironmentConfiguration(
-            'standaloneFusion',
-            $eelCacheDirectory
-        );
-        $cacheFactory = new CacheFactory($environmentConfiguration);
-        $eelCache = $cacheFactory->create('eelEvaluatorCache', PhpFrontend::class, FileBackend::class);
-
-        $this->eelEvaluator = new CompilingEvaluator($eelCache);
+        $this->defaultContextVariables = $defaultContextVariables;
+        $this->eelEvaluator = $eelEvaluator;
 
         $this->simpleTypeToArrayClosure = function ($simpleType) {
             return $simpleType === null ? null : [
@@ -309,7 +296,7 @@ class Runtime
                 '%2$s\ThrowingHandler' . "\n" .
                 '%2$s\XmlCommentHandler',
                 $exceptionHandlerClass,
-                'Neos\Fusion\Core\ExceptionHandlers'
+                'Sitegeist\Fusion\Standalone\Core\ExceptionHandlers'
             );
             throw new InvalidConfigurationException($message, 1368788926);
         }
@@ -711,7 +698,7 @@ class Runtime
      *
      * @param string $fusionPath the Fusion path up to now
      * @param array $valueConfiguration Fusion configuration for the value
-     * @param \Neos\Fusion\FusionObjects\AbstractFusionObject $contextObject An optional object for the "this" value inside the context
+     * @param \Sitegeist\Fusion\Standalone\FusionObjects\AbstractFusionObject $contextObject An optional object for the "this" value inside the context
      * @return mixed The result of the evaluation
      */
     protected function evaluateEelExpressionOrSimpleValueWithProcessor($fusionPath, array $valueConfiguration, AbstractFusionObject $contextObject = null)
@@ -732,7 +719,7 @@ class Runtime
      * Evaluate an Eel expression
      *
      * @param string $expression The Eel expression to evaluate
-     * @param \Neos\Fusion\FusionObjects\AbstractFusionObject $contextObject An optional object for the "this" value inside the context
+     * @param \Sitegeist\Fusion\Standalone\FusionObjects\AbstractFusionObject $contextObject An optional object for the "this" value inside the context
      * @return mixed The result of the evaluated Eel expression
      * @throws Exception
      */
@@ -810,16 +797,12 @@ class Runtime
     }
 
     /**
-     * Get variables from configuration that should be set in the context by default.
-     * For example Eel helpers are made available by this.
+     * Get default variables from configuration that were passed during creation
      *
      * @return array Array with default context variable objects.
      */
     protected function getDefaultContextVariables()
     {
-        if ($this->defaultContextVariables === null) {
-            $this->defaultContextVariables = EelUtility::getDefaultContextVariables($this->defaultContextConfiguration);
-        }
         return $this->defaultContextVariables;
     }
 
