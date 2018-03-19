@@ -7,8 +7,7 @@
         "sitegeist/eel-standalone": "*",
         "neos/utility-arrays": "~4.3",
         "neos/utility-files": "~4.3",
-        "neos/utility-objecthandling": "~4.3",
-        "neos/cache": "~4.3"
+        "neos/utility-objecthandling": "~4.3"
     },
     "autoload": {
         "psr-4": {
