@@ -153,11 +153,6 @@ class Runtime
         };
     }
 
-    public function  __destruct()
-    {
-        $this->eelEvaluator->shutdownObject();
-    }
-
     /**
      * Completely replace the context array with the new $contextArray.
      *
